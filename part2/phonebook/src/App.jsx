@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Filter from './components/Filter'
 import Form from './components/Form'
-import Persons from './components/Persons'
+import Person from './components/Person'
 import personService from './services/persons'
 
 const App = () => {
@@ -40,6 +40,21 @@ const App = () => {
       })
   }
 
+  const deletePerson = id => {
+    if (window.confirm(`Delete ${personsFilter.filter((person) => person.id === id)[0].name}?`)) {
+      personService
+        .deletePerson(id)
+        .then(() => {
+          personService
+            .getAll()
+            .then(updatedPersons => {
+              setPersons(updatedPersons)
+            })
+        })
+    }
+  }
+  
+
   const handleNameChange = (event) => {
     setNewName(event.target.value)
   }
@@ -63,7 +78,16 @@ const App = () => {
       <h2>add a new</h2>
       <Form onSubmit={addPerson} newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange}/>
       <h2>Numbers</h2>
-      <Persons persons={personsFilter}/>
+      <ul>
+        {personsFilter.map(
+          (person) => 
+          <Person 
+            key={person.id}
+            person={person}
+            deletePerson={() => deletePerson(person.id)}
+          />
+        )}
+      </ul>
     </div>
   )
 }
