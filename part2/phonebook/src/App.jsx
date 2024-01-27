@@ -10,6 +10,8 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
 
+  const baseUrl = 'http://localhost:3001/persons'
+
   const hook = () => {
     console.log('effect')
     axios
@@ -34,8 +36,11 @@ const App = () => {
       number: newNumber
     }
 
-    setPersons(persons.concat(person))
-    setNewName('')
+    axios.post(baseUrl, person)
+    .then(response => {
+      setPersons(persons.concat(response.data))
+      setNewName('')
+    })
   }
 
   const handleNameChange = (event) => {
