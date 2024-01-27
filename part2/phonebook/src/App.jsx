@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import Persons from './components/Persons'
+import { useEffect, useState } from 'react'
 import Filter from './components/Filter'
 import Form from './components/Form'
+import Persons from './components/Persons'
+import personService from './services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -10,18 +10,13 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
 
-  const baseUrl = 'http://localhost:3001/persons'
-
-  const hook = () => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
-      })
-  }
-  useEffect(hook, [])  
+  useEffect(() => {
+    personService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
+      }) 
+  }, [])  
   console.log('render', persons.length, 'persons')
 
   const addPerson = (event) => {
@@ -36,11 +31,13 @@ const App = () => {
       number: newNumber
     }
 
-    axios.post(baseUrl, person)
-    .then(response => {
-      setPersons(persons.concat(response.data))
-      setNewName('')
-    })
+    personService
+      .create(person)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
+      })
   }
 
   const handleNameChange = (event) => {
