@@ -10,6 +10,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
   const [notificationMessage, setNotificationMessage] = useState(null)
+  const [notificationClass, setNotificationClass] = useState(null)
 
   useEffect(() => {
     personService
@@ -40,7 +41,7 @@ const App = () => {
         setPersons(persons.concat(returnedPerson))
         setNewName('')
         setNewNumber('')
-        updateNotificationMessage(`Successfully added ${returnedPerson.name} to phonebook`, 5000)
+        updateNotificationMessage(`Successfully added ${returnedPerson.name} to phonebook`, 'success', 5000)
       })
   }
 
@@ -66,18 +67,19 @@ const App = () => {
     personService
       .update(id, changedPerson)
       .then(returnedPerson => setPersons(persons.map(person => person.id !== id ? person : returnedPerson)))
-      .then(updateNotificationMessage(`Succesfully updated ${changedPerson.name} number`, 5000))
-      .catch(error => {
-        console.log(error)
-        alert(`person ${person.name} was already deleted from the server`)
+      .then(updateNotificationMessage(`Succesfully updated ${changedPerson.name} number`, 'success', 5000))
+      .catch(() => {
+        updateNotificationMessage(`person ${person.name} was already deleted from the server`, 'error', 5000)
         setPersons(persons.filter(person => person.id !== id))
       })
   }
 
-  const updateNotificationMessage = (message, duration) => {
+  const updateNotificationMessage = (message, className, duration) => {
     setNotificationMessage(message)
+    setNotificationClass(className)
     setTimeout(() => {
       setNotificationMessage(null)
+      setNotificationClass(null)
     }, duration);
   }
 
@@ -101,13 +103,13 @@ const App = () => {
     ? persons
     : persons.filter(person => person.name.toLowerCase().includes(filter))
 
-  const Notification = ({ message }) => {
+  const Notification = ({ message, className }) => {
     if (message === null) {
       return null
     }
 
     return (
-      <div className='success'>
+      <div className={className}>
         {message}
       </div>
     )
@@ -116,7 +118,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={notificationMessage} />
+      <Notification message={notificationMessage} className={notificationClass}/>
       <Filter filter={filter} handleFilterChange={handleFilterChange} />
       <h2>add a new</h2>
       <Form onSubmit={addPerson} newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange} />
