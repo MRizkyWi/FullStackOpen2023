@@ -9,14 +9,15 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [notificationMessage, setNotificationMessage] = useState(null)
 
   useEffect(() => {
     personService
       .getAll()
       .then(initialPersons => {
         setPersons(initialPersons)
-      }) 
-  }, [])  
+      })
+  }, [])
   console.log('render', persons.length, 'persons')
 
   const addPerson = (event) => {
@@ -39,6 +40,7 @@ const App = () => {
         setPersons(persons.concat(returnedPerson))
         setNewName('')
         setNewNumber('')
+        updateNotificationMessage(`Successfully added ${returnedPerson.name} to phonebook`, 5000)
       })
   }
 
@@ -59,18 +61,26 @@ const App = () => {
 
   const updatePerson = (id, newNumber) => {
     const person = findPerson(id)
-    const changedPerson = {...person, number: newNumber}
+    const changedPerson = { ...person, number: newNumber }
 
     personService
       .update(id, changedPerson)
       .then(returnedPerson => setPersons(persons.map(person => person.id !== id ? person : returnedPerson)))
+      .then(updateNotificationMessage(`Succesfully updated ${changedPerson.name} number`, 5000))
       .catch(error => {
         console.log(error)
         alert(`person ${person.name} was already deleted from the server`)
         setPersons(persons.filter(person => person.id !== id))
       })
   }
-  
+
+  const updateNotificationMessage = (message, duration) => {
+    setNotificationMessage(message)
+    setTimeout(() => {
+      setNotificationMessage(null)
+    }, duration);
+  }
+
   const findPerson = id => {
     return persons.find(person => person.id === id)
   }
@@ -91,21 +101,34 @@ const App = () => {
     ? persons
     : persons.filter(person => person.name.toLowerCase().includes(filter))
 
+  const Notification = ({ message }) => {
+    if (message === null) {
+      return null
+    }
+
+    return (
+      <div className='success'>
+        {message}
+      </div>
+    )
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notificationMessage} />
       <Filter filter={filter} handleFilterChange={handleFilterChange} />
       <h2>add a new</h2>
-      <Form onSubmit={addPerson} newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange}/>
+      <Form onSubmit={addPerson} newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange} />
       <h2>Numbers</h2>
       <ul>
         {personsFilter.map(
-          (person) => 
-          <Person 
-            key={person.id}
-            person={person}
-            deletePerson={() => deletePerson(person.id)}
-          />
+          (person) =>
+            <Person
+              key={person.id}
+              person={person}
+              deletePerson={() => deletePerson(person.id)}
+            />
         )}
       </ul>
     </div>
