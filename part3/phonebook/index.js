@@ -36,21 +36,26 @@ const generateId = () => {
 app.post('/api/persons', (request, response) => {
   const body = request.body
 
-  if (!body.content) {
+  if (!body.name) {
     return response.status(400).json({ 
       error: 'content missing' 
     })
   }
 
   const person = {
-    content: body.content,
-    important: Boolean(body.important) || false,
     id: generateId(),
+    name: body.name,
+    number: body.number,
   }
 
   persons = persons.concat(person)
 
   response.json(person)
+})
+
+app.get('/info', (request, response) => {
+  const date = new Date(Date.now())
+  response.send(`Phonebook has info for ${persons.length} people <br /> ${date.toUTCString()}`)
 })
 
 app.get('/', (request, response) => {
